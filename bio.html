@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1a0f0a" />
+<title>— a soft diary —</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400;1,9..144,500&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cognac:#a86b3c;
+    --cream:#f6efe5;
+    --linen:#ece2d2;
+    --beige:#d8c4a8;
+    --warm-white:#fbf6ee;
+    --espresso:#2a1810;
+    --espresso-deep:#1a0f0a;
+    --gold:#c9a169;
+    --shadow:rgba(42,24,16,.35);
+    --ease:cubic-bezier(.2,.7,.2,1);
+    --serif:'Fraunces', 'Times New Roman', serif;
+    --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{
+    background:var(--espresso-deep);
+    color:var(--cream);
+    font-family:var(--sans);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  html{scroll-behavior:smooth;}
+  body{
+    overscroll-behavior-y:none;
+    line-height:1.4;
+  }
+  img{display:block;width:100%;height:100%;object-fit:cover;}
+  a{color:inherit;text-decoration:none;}
+
+  /* film grain overlay */
+  .grain{
+    pointer-events:none;
+    position:fixed;inset:0;
+    z-index:200;
+    opacity:.10;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .9 0 0 0 0 .85 0 0 0 0 .78 0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  /* warm vignette overlay */
+  .vignette{
+    pointer-events:none;
+    position:fixed;inset:0;
+    z-index:150;
+    background:radial-gradient(120% 80% at 50% 50%, transparent 50%, rgba(26,15,10,.55) 100%);
+  }
+
+  /* progress bar */
+  .progress{
+    position:fixed;top:0;left:0;height:2px;width:0%;
+    background:linear-gradient(90deg, transparent, var(--gold), var(--cognac));
+    z-index:300;transition:width .2s linear;
+  }
+
+  /* tiny header */
+  .crest{
+    position:fixed;top:18px;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:0 22px;z-index:160;font-family:var(--serif);
+    font-style:italic;font-weight:300;
+    letter-spacing:.12em;font-size:11px;
+    color:rgba(246,239,229,.7);
+    mix-blend-mode:difference;
+  }
+  .crest .dot{
+    width:5px;height:5px;border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 8px var(--gold);
+    animation:pulse 2.6s var(--ease) infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:.5;transform:scale(.9)}
+    50%{opacity:1;transform:scale(1.1)}
+  }
+
+  /* section base */
+  section{
+    position:relative;
+    width:100%;
+    min-height:100svh;
+    display:flex;
+    overflow:hidden;
+  }
+
+  /* reusable reveal */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity 1.4s var(--ease), transform 1.4s var(--ease);}
+  .reveal.in{opacity:1;transform:none;}
+  .reveal.delay-1{transition-delay:.15s}
+  .reveal.delay-2{transition-delay:.35s}
+  .reveal.delay-3{transition-delay:.55s}
+  .reveal.delay-4{transition-delay:.8s}
+
+  .img-mask{
+    position:relative;overflow:hidden;
+  }
+  .img-mask::after{
+    content:'';position:absolute;inset:0;background:var(--espresso-deep);
+    transform-origin:top;transform:scaleY(1);
+    transition:transform 1.6s var(--ease);
+  }
+  .img-mask.in::after{transform:scaleY(0);}
+  .img-mask img{transform:scale(1.25);transition:transform 6s var(--ease);}
+  .img-mask.in img{transform:scale(1);}
+
+  /* — INTRO — */
+  #intro{
+    background:radial-gradient(120% 90% at 50% 60%, #3a2316 0%, #1a0f0a 60%, #0d0805 100%);
+    align-items:center;justify-content:center;
+    text-align:center;padding:24px;
+  }
+  #intro .halo{
+    position:absolute;width:140vw;height:140vw;left:-20vw;top:-20vw;
+    background:radial-gradient(circle, rgba(201,161,105,.18), transparent 55%);
+    filter:blur(40px);animation:drift 22s var(--ease) infinite alternate;
+    pointer-events:none;
+  }
+  @keyframes drift{
+    from{transform:translate(-3%,-2%) scale(1)}
+    to{transform:translate(3%,4%) scale(1.08)}
+  }
+  .intro-stack{position:relative;z-index:2;max-width:520px;}
+  .kicker{
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    letter-spacing:.4em;text-transform:uppercase;
+    font-size:10px;color:var(--gold);opacity:.85;margin-bottom:30px;
+  }
+  .kicker span{display:inline-block;animation:fadeUp 2s var(--ease) both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:.85;transform:none}}
+  .display{
+    font-family:var(--serif);
+    font-weight:300;font-style:italic;
+    font-size:clamp(54px, 16vw, 120px);
+    line-height:.95;letter-spacing:-.02em;
+    color:var(--warm-white);
+  }
+  .display em{font-style:italic;color:var(--cognac);}
+  .sub{
+    margin-top:34px;
+    font-family:var(--serif);font-weight:300;font-style:italic;
+    font-size:14px;letter-spacing:.18em;color:rgba(246,239,229,.65);
+  }
+  .scroll-hint{
+    position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
+    font-family:var(--serif);font-style:italic;font-size:10px;
+    letter-spacing:.4em;text-transform:uppercase;color:rgba(246,239,229,.4);
+    animation:bob 3s var(--ease) infinite;
+  }
+  .scroll-hint::after{
+    content:'';display:block;width:1px;height:32px;
+    background:linear-gradient(to bottom, var(--gold), transparent);
+    margin:10px auto 0;
+  }
+  @keyframes bob{
+    0%,100%{transform:translate(-50%,0);opacity:.5}
+    50%{transform:translate(-50%,6px);opacity:.85}
+  }
+
+  /* — IDENTITY — */
+  #identity{
+    background:var(--espresso);
+    padding:80px 22px;align-items:center;
+  }
+  .identity-wrap{
+    width:100%;display:grid;gap:30px;
+  }
+  .portrait{
+    position:relative;width:100%;
+    aspect-ratio: 3/4.2;
+    border-radius:2px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.6);
+  }
+  .portrait .frame-tag{
+    position:absolute;top:14px;left:14px;
+    font-family:var(--serif);font-style:italic;font-size:10px;
+    letter-spacing:.3em;color:var(--cream);
+    background:rgba(26,15,10,.4);backdrop-filter:blur(6px);
+    padding:6px 10px;border:1px solid rgba(246,239,229,.18);
+  }
+  .portrait .frame-tag.tr{left:auto;right:14px;top:auto;bottom:14px;}
+  .identity-text{padding:0 4px;}
+  .identity-text h2{
+    font-family:var(--serif);font-weight:300;font-style:italic;
+    font-size:clamp(44px,13vw,86px);line-height:.96;letter-spacing:-.02em;
+    color:var(--warm-white);
+  }
+  .identity-text h2 em{color:var(--cognac);}
+  .identity-text p{
+    margin-top:22px;
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    font-size:15px;line-height:1.7;color:rgba(246,239,229,.7);
+    max-width:38ch;
+  }
+  .ornament{
+    display:flex;align-items:center;gap:14px;margin-top:30px;
+    font-family:var(--serif);font-style:italic;font-size:11px;
+    letter-spacing:.32em;text-transform:uppercase;color:var(--gold);
+  }
+  .ornament::before, .ornament::after{
+    content:'';flex:1;height:1px;background:linear-gradient(to right, transparent, rgba(201,161,105,.5), transparent);
+  }
+
+  /* — MEMORIES — */
+  #memories{
+    background:linear-gradient(180deg, var(--espresso) 0%, #20140d 100%);
+    padding:90px 0;flex-direction:column;
+  }
+  .section-title{
+    padding:0 22px;margin-bottom:40px;
+  }
+  .section-title small{
+    font-family:var(--serif);font-style:italic;font-size:10px;
+    letter-spacing:.4em;text-transform:uppercase;color:var(--gold);
+    display:block;margin-bottom:14px;
+  }
+  .section-title h3{
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    font-size:clamp(40px,11vw,72px);line-height:1;color:var(--warm-white);
+  }
+  .memories-grid{
+    display:grid;gap:14px;
+    grid-template-columns:repeat(6, 1fr);
+    padding:0 14px;
+  }
+  .mem{
+    position:relative;overflow:hidden;border-radius:2px;
+    box-shadow:0 14px 40px -20px rgba(0,0,0,.6);
+  }
+  .mem .cap{
+    position:absolute;left:10px;bottom:10px;
+    font-family:var(--serif);font-style:italic;font-size:12px;
+    color:var(--cream);text-shadow:0 2px 8px rgba(0,0,0,.6);
+    letter-spacing:.05em;
+  }
+  .mem.m1{grid-column:1/5;aspect-ratio:4/5;}
+  .mem.m2{grid-column:5/7;aspect-ratio:3/5;}
+  .mem.m3{grid-column:1/3;aspect-ratio:3/4;}
+  .mem.m4{grid-column:3/7;aspect-ratio:5/4;}
+  .mem.m5{grid-column:1/7;aspect-ratio:16/10;}
+  .mem.m6{grid-column:1/4;aspect-ratio:3/4;}
+  .mem.m7{grid-column:4/7;aspect-ratio:3/4;}
+
+  .pull-quote{
+    padding:80px 30px 20px;text-align:center;
+  }
+  .pull-quote q{
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    quotes:none;
+    font-size:clamp(22px,6vw,32px);line-height:1.35;
+    color:var(--cream);letter-spacing:-.01em;
+  }
+  .pull-quote q::before, .pull-quote q::after{content:'';}
+  .pull-quote span{
+    display:block;margin-top:18px;
+    font-family:var(--serif);font-style:italic;font-size:10px;
+    letter-spacing:.4em;text-transform:uppercase;color:var(--gold);opacity:.7;
+  }
+
+  /* — NIGHT — */
+  #night{
+    background:#0a0604;
+    flex-direction:column;padding:0;
+  }
+  .night-hero{
+    position:relative;width:100%;height:100svh;overflow:hidden;
+  }
+  .night-hero img{filter:contrast(1.05) saturate(.9) brightness(.85);}
+  .night-hero::before{
+    content:'';position:absolute;inset:0;z-index:2;
+    background:
+      radial-gradient(80% 50% at 70% 30%, rgba(201,161,105,.18), transparent 60%),
+      linear-gradient(180deg, rgba(10,6,4,.3) 0%, transparent 30%, transparent 60%, rgba(10,6,4,.85) 100%);
+  }
+  .night-text{
+    position:absolute;left:24px;right:24px;bottom:60px;z-index:3;
+  }
+  .night-text .label{
+    font-family:var(--serif);font-style:italic;font-size:11px;
+    letter-spacing:.4em;text-transform:uppercase;color:var(--gold);
+    margin-bottom:18px;
+  }
+  .night-text h3{
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    font-size:clamp(52px,15vw,100px);line-height:.95;color:var(--warm-white);
+    letter-spacing:-.02em;
+  }
+  .night-text h3 em{color:var(--cognac);}
+  .flashes{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;
+    background:#0a0604;
+  }
+  .flash{position:relative;aspect-ratio:3/4;overflow:hidden;}
+  .flash img{filter:contrast(1.1) saturate(.85) brightness(.95);}
+  .flash::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg, transparent 60%, rgba(0,0,0,.55));
+  }
+  .flash .tx{
+    position:absolute;left:10px;bottom:10px;z-index:2;
+    font-family:var(--serif);font-style:italic;font-size:12px;
+    color:var(--cream);letter-spacing:.04em;
+  }
+  .flash.wide{grid-column:1/3;aspect-ratio:16/10;}
+
+  /* — INTIMATE — */
+  #intimate{
+    background:linear-gradient(180deg, #0a0604 0%, #1f1308 8%, var(--linen) 100%);
+    color:var(--espresso);
+    flex-direction:column;padding:120px 0 80px;
+  }
+  #intimate .section-title{color:var(--espresso);}
+  #intimate .section-title small{color:var(--cognac);}
+  #intimate .section-title h3{color:var(--espresso);}
+  .intimate-stack{display:flex;flex-direction:column;gap:80px;padding:20px 22px 40px;}
+  .intimate-row{
+    display:grid;gap:18px;
+  }
+  .intimate-row.split{grid-template-columns:1.4fr 1fr;align-items:center;}
+  .intimate-row.split.rev{grid-template-columns:1fr 1.4fr;}
+  .intimate-row .ph{
+    aspect-ratio:3/4;overflow:hidden;
+    box-shadow:0 18px 50px -22px rgba(42,24,16,.45);
+  }
+  .intimate-row .ph.tall{aspect-ratio:3/4.3;}
+  .intimate-row .tx{
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    color:var(--espresso);
+  }
+  .intimate-row .tx .label{
+    font-size:10px;letter-spacing:.4em;text-transform:uppercase;
+    color:var(--cognac);margin-bottom:14px;font-style:normal;font-weight:400;
+  }
+  .intimate-row .tx h4{
+    font-weight:300;font-style:italic;
+    font-size:clamp(32px,8vw,48px);line-height:1;letter-spacing:-.01em;
+  }
+  .intimate-row .tx p{
+    margin-top:14px;font-size:14px;line-height:1.6;
+    color:rgba(42,24,16,.7);max-width:28ch;
+  }
+  .full-bleed{
+    width:100%;aspect-ratio:16/22;overflow:hidden;
+    margin-top:20px;
+  }
+  .single-line{
+    padding:80px 30px 20px;text-align:center;
+  }
+  .single-line p{
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    font-size:clamp(24px,7vw,38px);line-height:1.25;
+    color:var(--espresso);letter-spacing:-.01em;
+  }
+
+  /* — ENDING — */
+  #ending{
+    background:radial-gradient(120% 90% at 50% 40%, #3a2316 0%, #1a0f0a 65%, #0d0805 100%);
+    align-items:center;justify-content:center;text-align:center;
+    flex-direction:column;padding:80px 24px 60px;
+    position:relative;
+  }
+  #ending .halo{
+    position:absolute;width:140vw;height:140vw;left:-20vw;top:-30vw;
+    background:radial-gradient(circle, rgba(201,161,105,.16), transparent 55%);
+    filter:blur(40px);animation:drift 22s var(--ease) infinite alternate;
+    pointer-events:none;
+  }
+  .end-stack{position:relative;z-index:2;max-width:520px;}
+  .end-stack .display{
+    font-size:clamp(46px,14vw,96px);
+  }
+  .end-stack .display em{color:var(--gold);}
+  .end-stack .sub{margin-top:30px;}
+  .signature{
+    margin-top:50px;
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    font-size:18px;color:var(--cognac);
+    letter-spacing:.05em;
+  }
+  .links{
+    margin-top:60px;display:flex;justify-content:center;gap:30px;
+    font-family:var(--serif);font-style:italic;font-size:11px;
+    letter-spacing:.32em;text-transform:uppercase;color:rgba(246,239,229,.55);
+  }
+  .links a{position:relative;padding-bottom:4px;}
+  .links a::after{
+    content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
+    background:rgba(201,161,105,.5);transform:scaleX(.4);
+    transform-origin:left;transition:transform .8s var(--ease);
+  }
+  .links a:active::after{transform:scaleX(1);}
+  .colophon{
+    position:absolute;bottom:18px;left:0;right:0;text-align:center;
+    font-family:var(--serif);font-style:italic;font-size:9px;
+    letter-spacing:.4em;text-transform:uppercase;color:rgba(246,239,229,.3);
+  }
+
+  /* parallax helper */
+  [data-parallax]{will-change:transform;}
+
+  /* responsive nudges */
+  @media (min-width:720px){
+    .identity-wrap{grid-template-columns:1fr 1fr;align-items:center;gap:50px;}
+    .portrait{aspect-ratio:3/4.4;}
+    .memories-grid{padding:0 30px;gap:18px;}
+    section{padding-left:40px;padding-right:40px;}
+    #memories,#night,#intimate,#ending{padding-left:0;padding-right:0;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .reveal{transition:none;opacity:1;transform:none;}
+    .img-mask::after{display:none;}
+    .img-mask img{transform:none;}
+    .halo{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="vignette"></div>
+<div class="progress" id="progress"></div>
+
+<header class="crest">
+  <span>— softfilm</span>
+  <span class="dot"></span>
+  <span>mmxxvi °</span>
+</header>
+
+<!-- =================== INTRO =================== -->
+<section id="intro">
+  <div class="halo"></div>
+  <div class="intro-stack">
+    <div class="kicker reveal"><span>a visual diary</span></div>
+    <h1 class="display reveal delay-1">
+      soft<br/><em>hours</em>
+    </h1>
+    <p class="sub reveal delay-3">— a quiet kind of golden —</p>
+  </div>
+  <div class="scroll-hint">scroll</div>
+</section>
+
+<!-- =================== IDENTITY =================== -->
+<section id="identity">
+  <div class="identity-wrap">
+    <div class="portrait img-mask reveal" data-parallax="0.08">
+      <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80" alt="" />
+      <span class="frame-tag">roll 01 · frame 04</span>
+      <span class="frame-tag tr">— eden —</span>
+    </div>
+    <div class="identity-text">
+      <small class="reveal" style="font-family:var(--serif);font-style:italic;font-size:10px;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:18px;">chapter i · she</small>
+      <h2 class="reveal delay-1">a girl made of <em>golden hour</em></h2>
+      <p class="reveal delay-2">she keeps her favourite afternoons folded inside her pockets, the way other people keep secrets.</p>
+      <div class="ornament reveal delay-3">soft · slow · warm</div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== MEMORIES =================== -->
+<section id="memories">
+  <div class="section-title">
+    <small class="reveal">chapter ii · the archive</small>
+    <h3 class="reveal delay-1">little <br/><em>memories</em></h3>
+  </div>
+
+  <div class="memories-grid">
+    <div class="mem m1 img-mask reveal"><img src="https://images.unsplash.com/photo-1485178575877-1a13bf489dfe?auto=format&fit=crop&w=900&q=80" alt=""><span class="cap">— tuesday, 4pm</span></div>
+    <div class="mem m2 img-mask reveal delay-1"><img src="https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?auto=format&fit=crop&w=700&q=80" alt=""><span class="cap">paris</span></div>
+    <div class="mem m3 img-mask reveal"><img src="https://images.unsplash.com/photo-1495121553079-4c61bcce1894?auto=format&fit=crop&w=600&q=80" alt=""><span class="cap">linen</span></div>
+    <div class="mem m4 img-mask reveal delay-1"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80" alt=""><span class="cap">— honey light</span></div>
+    <div class="mem m5 img-mask reveal"><img src="https://images.unsplash.com/photo-1517256673644-36ad11246d21?auto=format&fit=crop&w=1100&q=80" alt=""><span class="cap">a long, slow morning</span></div>
+    <div class="mem m6 img-mask reveal"><img src="https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=700&q=80" alt=""><span class="cap">cognac</span></div>
+    <div class="mem m7 img-mask reveal delay-1"><img src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=700&q=80" alt=""><span class="cap">— soft</span></div>
+  </div>
+
+  <div class="pull-quote reveal">
+    <q>some days feel like film.<br/>soft, warm, a little out of focus.</q>
+    <span>— a note to self</span>
+  </div>
+</section>
+
+<!-- =================== NIGHT =================== -->
+<section id="night">
+  <div class="night-hero img-mask reveal" data-parallax="0.12">
+    <img src="https://images.unsplash.com/photo-1514894780887-121bb0468fbb?auto=format&fit=crop&w=1200&q=80" alt="" />
+    <div class="night-text">
+      <div class="label reveal delay-1">chapter iii · after dark</div>
+      <h3 class="reveal delay-2">city, <em>blurred</em></h3>
+    </div>
+  </div>
+
+  <div class="flashes">
+    <div class="flash img-mask reveal"><img src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=700&q=80" alt=""><span class="tx">— 11:42pm</span></div>
+    <div class="flash img-mask reveal delay-1"><img src="https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=700&q=80" alt=""><span class="tx">flash</span></div>
+    <div class="flash wide img-mask reveal"><img src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=1100&q=80" alt=""><span class="tx">— wine, taxis, gold</span></div>
+    <div class="flash img-mask reveal"><img src="https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=700&q=80" alt=""><span class="tx">midnight</span></div>
+    <div class="flash img-mask reveal delay-1"><img src="https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=700&q=80" alt=""><span class="tx">— soft chaos</span></div>
+  </div>
+</section>
+
+<!-- =================== INTIMATE =================== -->
+<section id="intimate">
+  <div class="section-title">
+    <small class="reveal">chapter iv · quiet luxury</small>
+    <h3 class="reveal delay-1">small <br/><em>religions</em></h3>
+  </div>
+
+  <div class="intimate-stack">
+
+    <div class="intimate-row split">
+      <div class="ph img-mask reveal" data-parallax="0.06">
+        <img src="https://images.unsplash.com/photo-1497636577773-f1231844b336?auto=format&fit=crop&w=700&q=80" alt="">
+      </div>
+      <div class="tx reveal delay-1">
+        <div class="label">i.</div>
+        <h4><em>coffee,</em><br/>black.</h4>
+        <p>a small ritual. the sound of a cup against a saucer. nothing else.</p>
+      </div>
+    </div>
+
+    <div class="intimate-row split rev">
+      <div class="tx reveal">
+        <div class="label">ii.</div>
+        <h4><em>linen</em><br/>mornings.</h4>
+        <p>cream sheets. open windows. the colour of warm bread.</p>
+      </div>
+      <div class="ph tall img-mask reveal delay-1" data-parallax="0.05">
+        <img src="https://images.unsplash.com/photo-1522444690501-2cf57f29cf7c?auto=format&fit=crop&w=700&q=80" alt="">
+      </div>
+    </div>
+
+    <div class="full-bleed img-mask reveal" data-parallax="0.1">
+      <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1100&q=80" alt="">
+    </div>
+
+    <div class="single-line reveal">
+      <p>— a life built<br/>out of <em>small, warm things.</em></p>
+    </div>
+
+    <div class="intimate-row split">
+      <div class="ph img-mask reveal"><img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=700&q=80" alt=""></div>
+      <div class="tx reveal delay-1">
+        <div class="label">iii.</div>
+        <h4><em>books,</em><br/>open.</h4>
+        <p>marked with espresso rings. read twice. always the same page.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =================== ENDING =================== -->
+<section id="ending">
+  <div class="halo"></div>
+  <div class="end-stack">
+    <div class="kicker reveal">— end of reel —</div>
+    <h2 class="display reveal delay-1">
+      stay<br/><em>soft.</em>
+    </h2>
+    <p class="sub reveal delay-2">the rest is just light, slowly fading.</p>
+    <div class="signature reveal delay-3">— eden, with love</div>
+
+    <div class="links reveal delay-4">
+      <a href="#">instagram</a>
+      <a href="#">tiktok</a>
+      <a href="#">letters</a>
+    </div>
+  </div>
+  <div class="colophon">— a softfilm experience · mmxxvi —</div>
+</section>
+
+<script>
+  // progress bar
+  const progress = document.getElementById('progress');
+  const onScroll = () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    progress.style.width = (h.scrollTop / max * 100) + '%';
+  };
+  document.addEventListener('scroll', onScroll, {passive:true});
+
+  // intersection reveal
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        if (e.target.classList.contains('reveal')) {
+          // keep observed only until in; unobserve to save work
+          io.unobserve(e.target);
+        }
+      }
+    });
+  }, {threshold: 0.15, rootMargin: '0px 0px -8% 0px'});
+
+  document.querySelectorAll('.reveal, .img-mask').forEach(el => io.observe(el));
+
+  // gentle parallax (no libraries) — translateY based on element center
+  const parallaxEls = document.querySelectorAll('[data-parallax]');
+  let ticking = false;
+  function applyParallax(){
+    const vh = window.innerHeight;
+    parallaxEls.forEach(el => {
+      const r = el.getBoundingClientRect();
+      const center = r.top + r.height/2;
+      const off = (center - vh/2) / vh; // -1..1 ish
+      const strength = parseFloat(el.dataset.parallax) || 0.05;
+      const y = -off * vh * strength;
+      const img = el.querySelector('img');
+      if (img) img.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0) scale(1.04)`;
+    });
+    ticking = false;
+  }
+  document.addEventListener('scroll', () => {
+    if (!ticking){ requestAnimationFrame(applyParallax); ticking = true; }
+  }, {passive:true});
+  window.addEventListener('resize', applyParallax);
+  applyParallax();
+
+  // soft touch-reactive tilt on portrait
+  const tiltTargets = document.querySelectorAll('.portrait, .night-hero');
+  tiltTargets.forEach(t => {
+    t.addEventListener('touchmove', (e) => {
+      const touch = e.touches[0];
+      const r = t.getBoundingClientRect();
+      const x = (touch.clientX - r.left) / r.width - .5;
+      const y = (touch.clientY - r.top) / r.height - .5;
+      const img = t.querySelector('img');
+      if (img) img.style.transform = `translate3d(${(-x*10).toFixed(1)}px, ${(-y*10).toFixed(1)}px, 0) scale(1.06)`;
+    }, {passive:true});
+    t.addEventListener('touchend', () => {
+      const img = t.querySelector('img');
+      if (img) img.style.transform = '';
+    });
+  });
+</script>
+</body>
+</html>
